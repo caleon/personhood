@@ -27,6 +27,11 @@ module Juscribe # :nodoc:
     def to_param
       username
     end
+
+    def middle_initial
+      display_optional name.middle_initial
+    end
+
     ##
     # Full name, unless empty, then shows "unnamed" variant.
     def full_name
