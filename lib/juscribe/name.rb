@@ -34,5 +34,9 @@ module Juscribe
     def to_s
       full
     end
+
+    def inspect
+      %Q{"#{complete}"}
+    end
   end
 end
