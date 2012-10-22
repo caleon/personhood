@@ -1,9 +1,269 @@
-= personhood
+= Personhood
 
-Description goes here.
+When you are tired of coding the same kinds of things for your User model (or any other person-like model) with all its typical +first_name+, +full_name+, and other brouhaha, use the Personhood gem to clean up your code by getting rid of those pesky lines and instead focusing on the lines of code that *truly* set your app apart.
 
-== Contributing to personhood
- 
+This is a bit of an opinionated library, so the following assumptions are in place (although in the future this can be made more customizable):
+
+== Assumptions
+
+1. Your class is expected to have the following attributes:
+
+* email (string)
+* username (string)
+* first_name (string)
+* middle_name (string)
+* last_name (string)
+* birthdate (date)
+* sex (integer)
+
+2. All attributes listed above are +attr_accessible+ as +:admin+.
+
+3. All but the first two attributes (email/username) listed above are +attr_accessible+ under normal cases.
+
+4. Out of the box, +last_name+ and +first_name+ are required. They, along with +middle_name+ are allowed at most 255 characters.
+
+5. As a +before_save+ callback, whitespaces are stripped from each of +last_name+, +first_name+, and +middle_name+.
+
+6. A record without a +birthdate+ attribute set (or nil) is treated as one whose birthdate is today, hence +age+ would be 0.
+
+== Customizations
+
+Currently the only customization at the API level is with regard to overriding the +#to_param+ instance method. Under normal circumstances you would override this to be used as a URL slug (permalinking with strings instead of ID numerics), but the library goes further to set the return value of +#to_s+ to the value of +#to_param+.
+
+Typically, I would suggest you defining your custom +#to_param+ within your model, but if you need to customize +#to_param+ for your own needs but do not wish to have its value associated with +#to_s+, you can override that method instead.
+
+== Usage
+
+=== Installation
+
+Gemfile:
+
+    gem 'personhood', github: 'caleon/personhood'
+
+Model class file (i.e. +app/models/user.rb+):
+
+    class User
+      include Juscribe::Personhood
+      # ..
+    end
+
+The include statement does not necessarily have to be at the very top of the class definition, but just be aware that upon inclusion, the module also writes a +composed_of+ statement, +validates+ defaults, and the aforementioned +attr_accessible+ rules.
+
+=== API
+
+Once your model is properly set up, these are the methods available to you:
+
+    # Given:
+    user = User.new({
+        email:        'john@doe.com',
+        username:     'johnDoe'
+        first_name:   'john',
+        last_name:    'doe',
+        middle_name:  'quincy',
+        sex:          1,
+        birthdate:    Date.new(1970, 1, 1)
+      }, as: :admin)
+
+Getting back on track, here are the _basic_ methods:
+
+    user.to_param
+    # => "johnDoe"
+
+    user.to_s
+    # => "johnDoe"
+
+    user.full_name
+    # => "john q. doe"
+
+    user.first_and_last_name
+    # => "john doe"
+
+    user.email_address
+    # => "john doe <john@doe.com>"
+
+    user.sex
+    # => "m"
+
+    user.sex(:full)
+    # => "male"
+
+    user.male?
+    # => true
+
+    user.female?
+    # => false
+
+    user.androgynous?
+    # => false
+
+    # Indeterminate sex:
+    andro = User.new
+
+    andro.sex
+    # => "?"
+
+    andro.sex(:full)
+    # => "(unknown)"
+
+    andro.androgynous?
+    # => true
+
+    user.age
+    # returns whatever the age happens to be for someone born on 1990/1/1
+
+    andro.age
+    # => 0
+
+The following are available due to the underlying Juscribe::Name method. You are free to interact with the Juscribe::Name class if you'd like, but the intent is to be hidden from your code and interacted only via the Juscribe::Personhood module which gets included in your class.
+
+    user.name
+    # => "john quincy doe"
+
+    user.name.class
+    # => Juscribe::Name
+
+    user.name.to_s
+    # => "john q. doe"
+
+    user.name.first
+    # => "john"
+
+    user.name.middle
+    # => "quincy"
+
+    user.name.middle_initial
+    # => "q."
+
+    user.name.last
+    # => "doe"
+
+    user.name.full
+    # => "john q. doe"
+
+    user.name.complete
+    # => "john quincy doe"
+
+The other byproduct of using this intermediary class is that it allows usage of +ActiveRecord+'s +composed_of+ statement:
+
+    user = User.create(name: 'Jane Zeta Doe') do |u|
+      # ..
+      # Assume other required attributes are set here
+      # ..
+    end
+
+    user.first_name
+    # => "Jane"
+
+    user.middle_name
+    # => "Zeta"
+
+    user.middle_initial
+    # => "Z."
+
+    user.last_name
+    # => "Doe"
+
+    name = Juscribe::Name.new('Jane', 'Zeta', 'Doe')
+    # or
+    name = Juscribe::Name.convert('Jane Zeta Doe')
+
+    User.where(name: name)
+    #     User Load (0.6ms)  SELECT `users`.* FROM `users` WHERE `users`.`first_name` = 'Jane' AND `users`.`middle_name` = 'Zeta' AND `users`.`last_name` = 'Doe'
+    # => [#<User id: ..>]
+
+    # Note: this means all mapped name parts must match exactly:
+    name = Juscribe::Name.convert('Jane Doe')
+    User.where(name: name)
+    #     User Load (0.6ms)  SELECT `users`.* FROM `users` WHERE `users`.`first_name` = 'Jane' AND `users`.`middle_name` IS NULL AND `users`.`last_name` = 'Doe'
+    # => []
+
+If you see yourself using Juscribe::Name a lot, you might want to consider aliasing it at the root level with:
+
+    Name = Juscribe::Name
+
+=== Sidenote
+
+Examples above were only using the +:admin+ role for demonstration. Ideally such account-level attributes should undergo more strenuous security checks in your controller. A simple way would be:
+
+    user = User.new(params[:user]) do |u|
+      u.email     = params[:user][:email]
+      u.username  = params[:user][:username]
+    end
+
+Values for +#sex+ are left lowercased because I'd argue capitalization should be handled at the CSS level with something like:
+
+    .user .sex { text-transform: capitalize; }
+
+=== Other modules included as a dependency
+
+==== Juscribe::Name
+
+The usage of this class is demonstrated above and its purpose is for abstraction and integration with +composed_of+.
+
+==== Juscribe::DisplayOptional
+
+This is used in the inner-workings of +Personhood+ to display a default "unknown" string if the actual value is blank.
+
+==== Juscribe::TosAcceptable
+
+This module is included in the gem now, but I'm considering taking it out, as it applies less to the "personhood" of an object but more to its "user-account-ness". For now, you may go on to use it in the following way:
+
+    # within app/models/user.rb
+    include Juscribe::TosAcceptable
+
+    # within migration
+    add_column :users, :tos_accepted_at, :datetime
+
+    # within your registration form
+    <%= form_for User.new do |f| %>
+      <%#= .. other form stuff %>
+
+      <%= f.label :tos_accepted do %>
+        <%= f.check_box :tos_accepted, value: '1' %>
+        I agree to the <%= link_to 'Terms of Use', terms_path %>.
+      <% end %>
+
+      <%= f.submit %>
+    <% end %>
+
+In the background, there is a faux-attribute-accessor for +:tos_accepted+ which, when asked to write a truthy form value, writes the timestamp when the form was submitted.
+
+Note that by including the Juscribe::TosAcceptable you are also adding the acceptance validation on that field (existing records without that field set will not validate).
+
+== Roadmap
+
+=== rex_validate
+
+If you looked in the source code you will find references to regexp validation commented out. As this gem was lifted from my other projects which typically use the rex_validate gem, I had to take out that aspect of the integration for the time being while I work out a cleaner way to integrate the two.
+
+=== More convenient Query parameters
+
+As in: "User.where(name: 'John Doe')"" instead of instantiating a new object of the Juscribe::Name class.
+
+=== Customizable column names
+
+Shouldn't be hard to do, and the aim is to not do +include Juscribe::Personhood+ and instead do:
+
+    class User < ActiveRecord::Base
+      claims_personhood columns: {
+                          first_name: :name1,
+                          # ..
+                          birthdate: :dob
+                        },
+                        defaults: {
+                          birthdate: Date.new(1900, 1, 1),
+                          age: nil
+                        }
+    end
+
+... although it might be simpler to +alias_attribute+ and override the +birthdate+ or +age+ methods in those options.
+
+=== General Direction
+
+While it might occur to some to include as options basic groups of functionality involving things like a person's address or profile information, the initial intent of the Personhood library was to contain just the bare minimum commonalities among typical projects. Furthermore, it should apply to non-user-related classes like +President+, for instance, which contains in its table a listing of all the presidents. In such a case, things like even +email_address+ are irrelevant and should not really apply. More fitting, perhaps, are extensions involving things like a person's biometrics (eye color, height, weight), birthplace or ethnicity.
+
+== Contributing to Personhood
+
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
 * Fork the project.
