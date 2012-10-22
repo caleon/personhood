@@ -60,13 +60,6 @@ describe 'Juscribe::Personhood' do
       subject { @marion }
     end
 
-    # describe 'testing', focus: true do
-    #   it 'does something' do
-    #     puts @colin.inspect
-    #     true.should be_true
-    #   end
-    # end
-
     describe '#first_and_last_name' do
 
       context 'with no name' do
