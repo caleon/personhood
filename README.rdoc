@@ -38,7 +38,9 @@ Typically, I would suggest you defining your custom +#to_param+ within your mode
 
 Gemfile:
 
-    gem 'personhood', github: 'caleon/personhood'
+    gem 'personhood'
+    # or GitHub latest:
+    # gem 'personhood', github: 'caleon/personhood'
 
 Model class file (i.e. +app/models/user.rb+):
 
