@@ -14,7 +14,7 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "Personhood"
+  gem.name = "personhood"
   gem.homepage = "http://github.com/caleon/personhood"
   gem.license = "MIT"
   gem.summary = %Q{ActiveRecord abstraction for attributes pertaining to a person-like model}
