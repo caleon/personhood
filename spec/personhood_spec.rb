@@ -151,7 +151,7 @@ describe 'Juscribe::Personhood' do
       end
     end
 
-    describe '#male|#female|#androgynous' do
+    describe '#male?|#female?|#androgynous?' do
 
       context 'with no sex' do
         it { should_not be_male }
