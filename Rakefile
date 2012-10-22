@@ -14,11 +14,17 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "personhood"
+  gem.name = "Personhood"
   gem.homepage = "http://github.com/caleon/personhood"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{ActiveRecord abstraction for attributes pertaining to a person-like model}
+  gem.description = <<-DESC
+    When you are tired of coding the same kinds of things for your User model
+    (or any other person-like model) with all its typical `first_name`,
+    `full_name`, and other brouhaha, use the Personhood gem to clean up your
+    code by getting rid of those pesky lines and instead focusing on the lines of
+    code that *truly* set your app apart.
+  DESC
   gem.email = "caleon@gmail.com"
   gem.authors = ["caleon"]
   # dependencies defined in Gemfile
@@ -43,7 +49,7 @@ Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "personhood #{version}"
+  rdoc.title = "Personhood #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
