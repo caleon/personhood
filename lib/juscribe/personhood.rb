@@ -15,8 +15,8 @@ module Juscribe # :nodoc:
         x.validates :middle_name
       end
 
-      attr_accessible :last_name, :first_name, :middle_name, :name, :birthdate, :sex
-      attr_accessible :last_name, :first_name, :middle_name, :name, :birthdate, :sex, :email, :username, as: :admin
+      # attr_accessible :last_name, :first_name, :middle_name, :name, :birthdate, :sex
+      # attr_accessible :last_name, :first_name, :middle_name, :name, :birthdate, :sex, :email, :username, as: :admin
     end
 
     # ----------------------------------------
