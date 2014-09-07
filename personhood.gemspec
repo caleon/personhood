@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "personhood"
-  s.version = "0.1.2"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["caleon"]
-  s.date = "2012-10-22"
+  s.date = "2014-09-07"
   s.description = "    When you are tired of coding the same kinds of things for your User model\n    (or any other person-like model) with all its typical `first_name`,\n    `full_name`, and other brouhaha, use the Personhood gem to clean up your\n    code by getting rid of those pesky lines and instead focusing on the lines of\n    code that *truly* set your app apart.\n"
   s.email = "caleon@gmail.com"
   s.extra_rdoc_files = [
@@ -30,6 +30,7 @@ Gem::Specification.new do |s|
     "lib/juscribe/personhood.rb",
     "lib/juscribe/tos_acceptable.rb",
     "lib/personhood.rb",
+    "personhood.gemspec",
     "spec/dummy/Rakefile",
     "spec/dummy/app/assets/javascripts/application.js",
     "spec/dummy/app/assets/stylesheets/application.css",
